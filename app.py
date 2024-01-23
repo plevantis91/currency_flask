@@ -1,13 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 import requests
 
+from src.consts import ACCESS_KEY, CONVERT_ENDPOINT
+from helper import prep_params
+
 app = Flask(__name__)
-
-# Your ExchangeRate API access key
-access_key = '219724147fdff6296ab90e010b04310e'
-
-# ExchangeRate API endpoint for conversion
-convert_endpoint = 'http://api.exchangerate.host/convert'
 
 # Flask route for the home page
 @app.route('/', methods=['GET', 'POST'])
@@ -30,23 +27,16 @@ def forex_converter():
 
 def perform_conversion(from_currency, to_currency, amount):
     # Prepare parameters for the API request
-    params = {
-        'access_key': access_key,
-        'from': from_currency,
-        'to': to_currency,
-        'amount': amount,
-        'format': 1  # Set to 1 for a more human-readable response
-    }
+    params = prep_params(from_currency, to_currency, amount)
 
     # Make the API request
-    response = requests.get(convert_endpoint, params=params)
+    response = requests.get(CONVERT_ENDPOINT, params=params)
     data = response.json()
 
     # Check if the request was successful
     if data.get('success', False):
         return data['result']
-    else:
-        return f"Conversion failed. Error: {data.get('error', 'Unknown error')}"
+    return f"Conversion failed. Error: {data.get('error', 'Unknown error')}"
 
 if __name__ == '__main__':
     app.run(debug=True)
