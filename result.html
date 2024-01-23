@@ -1,0 +1,10 @@
+{% extends 'index.html' %}
+
+{% block title %}Conversion Result - Forex Converter{% endblock %}
+
+{% block header %}Conversion Result{% endblock %}
+
+{% block content %}
+    <p>The result is {{ conversion_result }} /p>
+    <a href="{{ url_for('index') }}">Return Home</a>
+{% endblock %}

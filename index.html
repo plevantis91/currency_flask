@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forex Converter</title>
+    <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+    <h1>Forex Converter</h1>
+    <form method="post">
+        <label for="from_currency">From Currency:</label>
+        <input type="text" name="from_currency" required>
+
+        <label for="to_currency">To Currency:</label>
+        <input type="text" name="to_currency" required>
+
+        <label for="amount">Amount:</label>
+        <input type="number" name="amount" required step="any">
+
+        <button type="submit">Convert</button>
+    </form>
+
+    {% if result %}
+        <p>The result is {{ conversion_result }} </p>
+    {% endif %}
+</body>
+</html>
+
