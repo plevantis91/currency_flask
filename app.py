@@ -1,40 +1,55 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, redirect, url_for
+import requests
 
 app = Flask(__name__)
 
-API_KEY = '219724147fdff6296ab90e010b04310e'
-BASE_URL = 'http://api.exchangerate.host/live?access_key=219724147fdff6296ab90e010b04310e'
+# Your ExchangeRate API access key
+access_key = '219724147fdff6296ab90e010b04310e'
 
-def get_exchange_rates(base_currency='USD'):
-    params = {'base': base_currency, 'symbols': ''}
-    response = request.get(BASE_URL, params=params)
-    data = response.json
-    return data['rates']
+# ExchangeRate API endpoint for conversion
+convert_endpoint = 'http://api.exchangerate.host/convert'
 
-@app.route('/')
-def index():
-    # Get the list of currencies for the dropdown
-    currencies = get_exchange_rates().keys()
-    return render_template('index.html', currencies=currencies)
+# Flask route for the home page
+@app.route('/', methods=['GET', 'POST'])
+def forex_converter():
+    if request.method == 'POST':
+        # Get form data
+        from_currency = request.form['from_currency']
+        to_currency = request.form['to_currency']
+        amount = float(request.form['amount'])
 
-@app.route('/convert', methods=['POST'])
-def convert():
-    # Retrieve data from the form
-    amount = float(request.form['amount'])
-    from_currency = request.form['from_currency']
-    to_currency = request.form['to_currency']
+        # Perform currency conversion
+        conversion_result = perform_conversion(from_currency, to_currency, amount)
 
-    # Fetch the latest exchange rates
-    exchange_rates = get_exchange_rates(from_currency)
+        return render_template('result.html', result=True,
+                               from_currency=from_currency, to_currency=to_currency,
+                               amount=amount, conversion_result=conversion_result)
 
-    # Perform the conversion
-    if to_currency in exchange_rates:
-        converted_amount = amount * exchange_rates[to_currency]
-        result = {'success': True, 'converted_amount': converted_amount}
+    # Render the initial form
+    return render_template('index.html', result=False)
+
+def perform_conversion(from_currency, to_currency, amount):
+    # Prepare parameters for the API request
+    params = {
+        'access_key': access_key,
+        'from': from_currency,
+        'to': to_currency,
+        'amount': amount,
+        'format': 1  # Set to 1 for a more human-readable response
+    }
+
+    # Make the API request
+    response = requests.get(convert_endpoint, params=params)
+    data = response.json()
+
+    # Check if the request was successful
+    if data.get('success', False):
+        return data['result']
     else:
-        result = {'success': False, 'error': 'Invalid currency code'}
-
-    return jsonify(result)
+        return f"Conversion failed. Error: {data.get('error', 'Unknown error')}"
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
